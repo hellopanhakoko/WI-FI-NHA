@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WiFi Recon — Hacker Mode</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --green:#00ff9c;
+    --blue:#00b3ff;
+    --bg:#020617;
+}
+*{box-sizing:border-box}
+
+/* ===== BASE ===== */
+body{
+    margin:0;
+    background:radial-gradient(circle at center,#020b1a,#020617 70%);
+    color:var(--green);
+    font-family:'Share Tech Mono',monospace;
+    overflow-x:hidden;
+}
+
+/* ===== SCAN LINES ===== */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0,255,156,.03),
+        rgba(0,255,156,.03) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    pointer-events:none;
+    animation:scanlines 1.2s linear infinite;
+}
+@keyframes scanlines{
+    from{transform:translateY(0)}
+    to{transform:translateY(4px)}
+}
+
+/* ===== HEADER ===== */
+h1{
+    text-align:center;
+    margin:20px 0;
+    letter-spacing:3px;
+    color:var(--blue);
+    position:relative;
+    animation:glitch 1.2s infinite;
+}
+@keyframes glitch{
+    0%{text-shadow:none}
+    20%{text-shadow:-2px 0 red}
+    40%{text-shadow:2px 0 cyan}
+    60%{text-shadow:-1px 0 lime}
+    100%{text-shadow:none}
+}
+
+/* ===== RADAR ===== */
+.radar{
+    width:180px;
+    height:180px;
+    border:2px solid var(--green);
+    border-radius:50%;
+    margin:0 auto 20px;
+    position:relative;
+    overflow:hidden;
+}
+.radar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:conic-gradient(
+      from 0deg,
+      rgba(0,255,156,.35),
+      transparent 60%
+    );
+    animation:rotate 2s linear infinite;
+}
+@keyframes rotate{
+    to{transform:rotate(360deg)}
+}
+
+/* ===== TABLE ===== */
+table{
+    width:95%;
+    max-width:1100px;
+    margin:auto;
+    border-collapse:collapse;
+    background:#020b1a;
+}
+th,td{padding:10px;text-align:left}
+th{
+    color:var(--blue);
+    border-bottom:2px solid var(--green);
+}
+tbody tr{
+    animation:pulse 2s infinite alternate;
+}
+@keyframes pulse{
+    from{background:rgba(0,255,156,.03)}
+    to{background:rgba(0,255,156,.08)}
+}
+
+/* ===== BUTTON ===== */
+button{
+    background:black;
+    color:var(--green);
+    border:1px solid var(--green);
+    padding:6px 14px;
+    cursor:pointer;
+    transition:.2s;
+}
+button:hover{
+    background:var(--green);
+    color:black;
+    box-shadow:0 0 15px var(--green);
+}
+
+/* ===== FOOTER ===== */
+.footer{
+    text-align:center;
+    margin:12px;
+    opacity:.6;
+    animation:flicker 1.5s infinite;
+}
+@keyframes flicker{
+    0%,100%{opacity:.6}
+    50%{opacity:.2}
+}
+</style>
+</head>
+
+<body>
+
+<h1>WIFI RECON SYSTEM</h1>
+
+<div class="radar"></div>
+
+<table>
+<thead>
+<tr>
+<th>SSID</th>
+<th>BSSID</th>
+<th>SIGNAL</th>
+<th>DIST</th>
+<th>SEC</th>
+<th>CMD</th>
+</tr>
+</thead>
+<tbody id="wifi"></tbody>
+</table>
+
+<div class="footer">LIVE SCAN • HACK MODE</div>
+
+<script>
+async function scan(){
+    const res = await fetch('/scan');
+    const data = await res.json();
+    const body = document.getElementById('wifi');
+    body.innerHTML = '';
+
+    if(!data.length){
+        body.innerHTML='<tr><td colspan="6">NO WIFI FOUND</td></tr>';
+        return;
+    }
+
+    data.forEach(w=>{
+        const link =
+        `/wifi?ssid=${encodeURIComponent(w.ssid)}&bssid=${w.bssid}&signal=${w.signal}&distance=${w.distance}&security=${w.security}`;
+
+        body.innerHTML += `
+        <tr>
+          <td>${w.ssid}</td>
+          <td>${w.bssid}</td>
+          <td>${w.signal}%</td>
+          <td>${w.distance}m</td>
+          <td>${w.security}</td>
+          <td><button onclick="location.href='${link}'">CHECK</button></td>
+        </tr>
+        `;
+    });
+}
+
+scan();
+setInterval(scan, 2000); /* 🔥 2× speed */
+</script>
+
+</body>
+</html>
